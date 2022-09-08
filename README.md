@@ -1,215 +1,70 @@
-import java .io.*;
-
-import java.io.BufferedReader;
-
-public class CRC {
-
-    public static void main(String[] args) throws IOException {
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-          System.out.println("Enter Generator:");
-
-          String gen = br.readLine();
-
-          System.out.println("Enter Data:");
-
-          String data = br.readLine();
-
-          String code = data;
-
-          while(code.length() < (data.length() + gen.length() - 1))
-
-           code = code + "0";
-
-          code = data + div(code,gen);
-
-          System.out.println("The transmitted Code Word is: " + code);
-
-          System.out.println("Please enter the received Code Word: ");
-
-          String rec = br.readLine();
-
-          if(Integer.parseInt(div(rec,gen)) == 0)
-
-           System.out.println("The received code word contains no errors.");
-
-          else
-
-           System.out.println("The received code word contains errors.");
-
-         }
-
-         static String div(String num1,String num2)
-
-         {
-
-          int pointer = num2.length();
-
-          String result = num1.substring(0, pointer);
-
-          String remainder = "";
-
-          for(int i = 0; i < num2.length(); i++)
-
-          {
-
-           if(result.charAt(i) == num2.charAt(i))
-
-            remainder += "0";
-
-           else
-
-            remainder += "1";
-
-          }
-
-          while(pointer < num1.length())
-
-          {
-
-           if(remainder.charAt(0) == '0')
-
-           {
-
-            remainder = remainder.substring(1, remainder.length());
-
-            remainder = remainder + String.valueOf(num1.charAt(pointer));
-
-            pointer++;
-
-           }
-
-           result = remainder;
-
-           remainder = "";
-
-           for(int i = 0; i < num2.length(); i++)
-
-           {
-
-            if(result.charAt(i) == num2.charAt(i))
-
-             remainder += "0";
-
-            else
-
-             remainder += "1";
-
-           }
-
-          }
-
-          return remainder.substring(1,remainder.length());
-
-    }
-
-}
-___&&&&&&&&&--66667778888888
-
-import java.net.*;
-import java.io.*;
-public class Client
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+public class FileServer
 {
-    public static void main( String args[]) throws Exception
-    {
-        Socket cs = new Socket("localhost",1234);
-    BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
-    BufferedReader br = new BufferedReader(new InputStreamReader(cs.getInputStream()));
-    DataOutputStream dos = new DataOutputStream(cs.getOutputStream());
- 
-    System.out.println(" Enter text..");
-    System.out.println(" if client 'quit' type  exit");
-      
-    String s1,s4=null; 
-    while(!(s1=kb.readLine()).equals("exit"))
-    {
-        //System.out.println(" data  send to server machine");
-         dos.writeBytes(s1+"\n");
-        
-        s4 = br.readLine();
-        //System.out.println(" data  receive from  server machine");
-        System.out.println("Server said : "+s4);
-        System.out.println("Enter text ");
-        
-    }
-System.out.println("Terminated..");
-        cs.close(); 
-        dos.close();
-        kb.close();
-    }
-}
-__________&&&&&&&&&55666677777
-import java.net.*;
-
-import java.io.*;
-
-public class Server
-
+public static void main(String[] args) throws Exception
 {
-
-    public static void main( String args[]) throws Exception
-
-    {
-
-        ServerSocket srs = new ServerSocket(1234);
-
-        System.out.println("Server is running...");
-
-        Socket ss=srs.accept();
-
-        System.out.println("connection establised");
-
-BufferedReader kb = new BufferedReader(new InputStreamReader(System.in));
-
-BufferedReader br = new BufferedReader(new InputStreamReader(ss.getInputStream()));
-
-DataOutputStream dos = new DataOutputStream(ss.getOutputStream());
-
- 
-
- while(true)
-
- {
-
-  //System.out.println("server repeat as long as client not send null");
-
-  String s2,s3; 
-
-  while((s2=br.readLine())!=null)
-
-  {
-
-     System.out.println("Client said : "+s2);
-
-     System.out.println("Enter text ");
-
-    s3 = kb.readLine();
-
-//System.out.println("Answer send to client machine");
-
-     dos.writeBytes(s3+"\n");
-
-  }
-
-  System.out.println("Terminated..");
-
-  ss.close(); 
-
-  srs.close();
-
-  dos.close();
-
-  kb.close();
-
-  System.exit(0);
-
-  }
-
- }
-
+//Initialize Sockets
+ServerSocket ssock = new ServerSocket(5000);
+Socket socket = ssock.accept();
+//The InetAddress specification
+InetAddress IA = InetAddress.getByName("localhost");
+//Specify the file
+File file = new File("C:/GAYATHRI/Sample.txt");
+FileInputStream fis = new FileInputStream(file);
+BufferedInputStream bis = new BufferedInputStream(fis);
+//Get socket's output stream
+OutputStream os = socket.getOutputStream();
+//Read File Contents into contents array
+byte[] contents;
+long fileLength = file.length();
+long current = 0;
+long start = System.nanoTime();
+while(current!=fileLength){
+int size = 10000;
+if(fileLength - current >= size)
+current += size;
+else{
+size = (int)(fileLength - current);
+current = fileLength;
 }
-
-
-
-
+contents = new byte[size];
+bis.read(contents, 0, size);
+os.write(contents);
+System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
+}
+os.flush();
+//File transfer done. Close the socket connection!
+socket.close();ssock.close();
+System.out.println("File sent succesfully!");
+} }
+_______&&_______&&_
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+public class FileClient {
+public static void main(String[] args) throws Exception{
+//Initialize socket
+Socket socket = new Socket(InetAddress.getByName("localhost"), 5000);
+byte[] contents = new byte[10000];
+//Initialize the FileOutputStream to the output file's full path.
+FileOutputStream fos = new FileOutputStream("C:/FOLDER/Sample1.txt");
+BufferedOutputStream bos = new BufferedOutputStream(fos);
+InputStream is = socket.getInputStream();
+//No of bytes read in one read() call
+int bytesRead = 0;
+while((bytesRead=is.read(contents))!=-1)
+bos.write(contents, 0, bytesRead);
+bos.flush();
+socket.close();
+System.out.println("File saved successfully!");
+}
+}
+}
